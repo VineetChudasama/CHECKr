@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Copy, CheckCircle, AlertTriangle, RefreshCw, AlertCircle, Terminal, ChevronDown, ChevronUp, Clock, Type, Code, Activity } from 'lucide-react';
 
 interface Mistake {
