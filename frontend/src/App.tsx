@@ -102,7 +102,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen p-4 -pb- md:p-8 flex flex-col font-body overflow-x-hidden">
+    <div className="min-h-screen px-4 py-8 md:p-8 flex flex-col font-body overflow-x-hidden">
       {/* DECORATIVE BRUTALIST ELEMENTS - New Aesthetic */}
       <div className="fixed inset-0 pointer-events-none z-0 hidden lg:block overflow-hidden">
         
@@ -131,12 +131,12 @@ function App() {
       </div>
 
       {/* HEADER */}
-      <header className="mb-10 pt-15 flex flex-col items-center border-b-4 border-bg-dark pb-6 relative z-10">
-        <div className="relative inline-block">
-          <div className="bg-bg-dark text-red-accent brutal-border p-2 absolute -top-4 -left-12 transform -rotate-6 shadow-[4px_4px_0_var(--color-red-accent)]">
-            <Type size={32} />
+      <header className="mb-10 flex flex-col items-center border-b-4 border-bg-dark pb-6 relative z-10">
+        <div className="flex items-center justify-center">
+          <div className="bg-bg-dark text-red-accent brutal-border p-1 md:p-2 transform -rotate-6 shadow-[4px_4px_0_var(--color-red-accent)] -mr-3 md:-mr-6 mt-1 md:mt-2 relative z-20">
+            <Type className="w-[24px] h-[24px] md:w-[32px] md:h-[32px]" />
           </div>
-          <h1 className="text-6xl md:text-8xl font-brand text-red-accent tracking-widest drop-shadow-[4px_4px_0_#1A1717]">
+          <h1 className="text-6xl md:text-8xl font-brand text-red-accent tracking-widest drop-shadow-[4px_4px_0_#1A1717] relative z-10">
             CHECKr
           </h1>
         </div>
@@ -378,8 +378,10 @@ function App() {
               A simple and smart grammar & spell checker that helps you write better, clearer, and error-free — in seconds.
             </p>
             <div className="flex gap-4 mt-2">
-              <a href="#" className="p-2 border-2 border-red-accent/40 text-red-accent hover:bg-red-accent hover:text-bg-dark hover:border-red-accent transition-colors">
-                <Code size={20} />
+              <a href="https://github.com/VineetChudasama/CHECKr" target="_blank" rel="noopener noreferrer" className="p-2 border-2 border-red-accent/40 text-red-accent hover:bg-red-accent hover:text-bg-dark hover:border-red-accent transition-colors">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.02c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A4.8 4.8 0 0 0 8 18v4"></path>
+                </svg>
               </a>
             </div>
           </div>
