@@ -1,0 +1,447 @@
+import React, { useState } from 'react';
+import { Copy, CheckCircle, AlertTriangle, RefreshCw, AlertCircle, Terminal, ChevronDown, ChevronUp, Clock, Type, Code, Activity } from 'lucide-react';
+
+interface Mistake {
+  original: string;
+  corrected: string;
+  type: string;
+  explanation: string;
+}
+
+interface CheckResult {
+  correctedText: string;
+  mistakes: Mistake[];
+  mistakeCount: number;
+  timestamp?: Date;
+}
+
+function App() {
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<CheckResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [shake, setShake] = useState(false);
+  
+  // Interactivity: Accordions
+  const [expandedMistakes, setExpandedMistakes] = useState<Set<number>>(new Set());
+  
+  // Nice-to-have: History of last 5 checks
+  const [history, setHistory] = useState<CheckResult[]>([]);
+
+  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const charCount = text.length;
+  const hasResults = !!result;
+
+  const handleCheck = async () => {
+    if (!text.trim()) {
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setCopied(false);
+    setExpandedMistakes(new Set());
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || 'Failed to connect to the checking service.');
+      }
+
+      const data: CheckResult = await response.json();
+      data.timestamp = new Date();
+      setResult(data);
+      
+      setHistory(prev => [data, ...prev].slice(0, 5));
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = () => {
+    if (result) {
+      navigator.clipboard.writeText(result.correctedText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleClear = () => {
+    setText('');
+    setResult(null);
+    setError(null);
+    setCopied(false);
+  };
+
+  const toggleMistake = (idx: number) => {
+    const newExpanded = new Set(expandedMistakes);
+    if (newExpanded.has(idx)) {
+      newExpanded.delete(idx);
+    } else {
+      newExpanded.add(idx);
+    }
+    setExpandedMistakes(newExpanded);
+  };
+
+  const loadHistoryItem = (histItem: CheckResult) => {
+    setResult(histItem);
+    setCopied(false);
+    setExpandedMistakes(new Set());
+  };
+
+  return (
+    <div className="min-h-screen p-4 -pb- md:p-8 flex flex-col font-body overflow-x-hidden">
+      {/* DECORATIVE BRUTALIST ELEMENTS - New Aesthetic */}
+      <div className="fixed inset-0 pointer-events-none z-0 hidden lg:block overflow-hidden">
+        
+        {/* Floating Plus Sign */}
+        <div className="absolute top-[20%] right-[15%] text-red-accent font-heading text-9xl opacity-10 select-none animate-[spin_20s_linear_infinite]">
+          +
+        </div>
+
+        {/* Floating Asterisk */}
+        <div className="absolute bottom-[25%] left-[10%] text-off-white font-mono text-9xl opacity-10 select-none animate-[spin_30s_linear_infinite_reverse]">
+          *
+        </div>
+
+        {/* Floating Square */}
+        <div className="absolute top-[60%] left-[50%] text-maroon font-mono text-8xl opacity-10 select-none animate-[spin_40s_linear_infinite]">
+          ■
+        </div>
+
+        {/* Diagonal Warning Tape / Marquee */}
+        <div className="absolute top-[60px] right-[-80px] w-[400px] h-10 bg-red-accent brutal-border shadow-[4px_4px_0_var(--color-bg-dark)] rotate-45 flex items-center overflow-hidden opacity-80">
+          <div className="whitespace-nowrap font-heading text-bg-dark text-sm tracking-widest animate-marquee flex gap-4">
+            <span>GRAMMAR BRUTE /// NO MISTAKES /// GRAMMAR BRUTE /// NO MISTAKES /// GRAMMAR BRUTE /// NO MISTAKES /// GRAMMAR BRUTE /// NO MISTAKES ///</span>
+          </div>
+        </div>
+        
+      </div>
+
+      {/* HEADER */}
+      <header className="mb-10 pt-15 flex flex-col items-center border-b-4 border-bg-dark pb-6 relative z-10">
+        <div className="relative inline-block">
+          <div className="bg-bg-dark text-red-accent brutal-border p-2 absolute -top-4 -left-12 transform -rotate-6 shadow-[4px_4px_0_var(--color-red-accent)]">
+            <Type size={32} />
+          </div>
+          <h1 className="text-6xl md:text-8xl font-brand text-red-accent tracking-widest drop-shadow-[4px_4px_0_#1A1717]">
+            CHECKr
+          </h1>
+        </div>
+        <h2 className="mt-4 text-xl md:text-2xl font-heading text-off-white tracking-wide uppercase bg-bg-panel px-4 py-2 brutal-border inline-block shadow-[4px_4px_0_var(--color-maroon)] rotate-1">
+          Type it. Break it. We'll fix it.
+        </h2>
+      </header>
+
+      <main className="flex-1 w-full mx-auto max-w-[1400px] relative z-10 min-h-[80vh] ">
+        
+        {/* FLEX CONTAINER FOR SMOOTH ANIMATION */}
+        <div className="flex flex-col xl:flex-row w-full transition-all duration-700 ease-in-out items-start">
+          
+          {/* LEFT SPACER (For centering when no results) */}
+          <div className={`transition-all duration-700 ease-in-out hidden xl:block ${hasResults ? 'w-0' : 'w-[20%]'}`}></div>
+
+          {/* LEFT COLUMN: INPUT & HISTORY */}
+          <section className={`flex flex-col space-y-6 transition-all duration-700 ease-in-out flex-shrink-0 ${hasResults ? 'w-full xl:w-[40%] xl:pr-6' : 'w-full xl:w-[60%] mx-auto xl:mx-0'}`}>
+            <div className={`relative bg-brown-mid brutal-border p-3 transition-transform ${shake ? 'animate-shake' : ''}`}>
+              <textarea
+                className="w-full h-[350px] bg-bg-panel text-off-white p-6 font-body text-xl focus:outline-none focus:ring-4 focus:ring-red-accent brutal-border resize-y transition-shadow placeholder:text-gray-neutral"
+                placeholder="Paste or type your text here..."
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+              />
+              {/* Word/Char Count Chips */}
+              <div className="absolute bottom-6 right-6 flex gap-3">
+                <span className="bg-bg-dark text-off-white text-sm font-heading px-3 py-1 brutal-border shadow-[2px_2px_0_var(--color-red-accent)] rotate-[-2deg]">
+                  {wordCount} WORDS
+                </span>
+                <span className="bg-bg-dark text-off-white text-sm font-heading px-3 py-1 brutal-border shadow-[2px_2px_0_var(--color-red-accent)] rotate-[2deg]">
+                  {charCount} CHARS
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={handleCheck}
+                disabled={loading}
+                className="flex-[2] bg-red-accent text-off-white font-heading text-2xl py-5 brutal-border brutal-shadow-red disabled:opacity-70 disabled:cursor-not-allowed -rotate-1 flex justify-center items-center gap-3 uppercase tracking-wider group"
+              >
+                {loading ? (
+                  <>
+                    <RefreshCw className="animate-spin" size={28} />
+                    CHECKING...
+                  </>
+                ) : (
+                  <>
+                    <Terminal size={28} className="group-hover:animate-pulse" />
+                    CHECK TEXT
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleClear}
+                disabled={loading || (!text && !result && !error)}
+                className="flex-1 bg-gray-warm text-bg-dark font-heading text-xl px-4 py-5 brutal-border brutal-shadow disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider"
+              >
+                CLEAR
+              </button>
+            </div>
+
+            {error && (
+              <div className="bg-maroon text-off-white p-6 brutal-border mt-4 flex flex-col gap-4 shadow-[6px_6px_0_var(--color-bg-dark)] animate-fade-in">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle size={32} />
+                  <h3 className="font-heading text-2xl uppercase">Error Detected</h3>
+                </div>
+                <p className="font-body text-lg">{error}</p>
+                <button 
+                  onClick={handleCheck}
+                  className="bg-bg-dark text-off-white font-heading py-3 px-6 w-fit brutal-border brutal-shadow self-start mt-2 uppercase"
+                >
+                  TRY AGAIN
+                </button>
+              </div>
+            )}
+
+            {/* HISTORY PANEL */}
+            {history.length > 0 && (
+              <div className="bg-bg-panel brutal-border p-4 mt-8 shadow-[4px_4px_0_var(--color-brown-mid)]">
+                <h3 className="font-heading text-xl mb-4 flex items-center gap-2 border-b-2 border-bg-dark pb-2 uppercase">
+                  <Clock size={20} /> RECENT CHECKS
+                </h3>
+                <ul className="space-y-3">
+                  {history.map((hist, idx) => (
+                    <li key={idx}>
+                      <button
+                        onClick={() => loadHistoryItem(hist)}
+                        className="w-full text-left bg-brown-mid brutal-border p-3 hover:bg-gray-warm transition-colors font-body text-sm truncate shadow-[2px_2px_0_var(--color-bg-dark)] flex justify-between items-center"
+                      >
+                        <span className="truncate mr-4">{hist.correctedText.substring(0, 40)}...</span>
+                        <span className="font-mono bg-bg-dark px-2 text-xs brutal-border whitespace-nowrap">
+                          {hist.mistakeCount} ERROR{hist.mistakeCount !== 1 ? 'S' : ''}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+
+          {/* RIGHT COLUMN: RESULTS */}
+          <section className={`flex flex-col space-y-6 transition-all duration-700 ease-in-out overflow-hidden ${hasResults ? 'w-full xl:w-[60%] xl:pl-6 opacity-100 max-h-[5000px] mt-10 xl:mt-0' : 'w-0 opacity-0 max-h-0'}`}>
+            {loading && (
+              <div className="h-full min-h-[400px] flex items-center justify-center bg-brown-mid brutal-border shadow-[8px_8px_0_var(--color-bg-dark)]">
+                <div className="text-center flex flex-col items-center">
+                  <div className="w-24 h-24 bg-red-accent brutal-border shadow-[4px_4px_0_var(--color-bg-dark)] animate-[spin_2s_linear_infinite] mb-8 relative">
+                    <div className="absolute inset-2 bg-bg-panel brutal-border"></div>
+                  </div>
+                  <h2 className="font-brand text-5xl tracking-widest text-red-accent uppercase animate-pulse drop-shadow-[2px_2px_0_#1A1717]">PROCESSING...</h2>
+                </div>
+              </div>
+            )}
+
+            {!loading && result && (
+              <div className="flex flex-col gap-8 animate-fade-in">
+                
+                {/* Summary Bar */}
+                {result.mistakeCount === 0 ? (
+                  <div className="bg-[#2D4A22] text-off-white p-6 brutal-border flex items-center gap-4 brutal-shadow-light -rotate-1 relative overflow-hidden">
+                    <div className="absolute -right-4 -top-4 opacity-20">
+                      <CheckCircle size={100} />
+                    </div>
+                    <CheckCircle size={48} className="relative z-10" />
+                    <div className="relative z-10">
+                      <h3 className="font-heading text-3xl uppercase">PERFECT!</h3>
+                      <p className="font-body text-lg mt-1">No mistakes found — great job!</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-maroon p-6 brutal-border flex items-center gap-4 shadow-[6px_6px_0_var(--color-bg-dark)] rotate-1 relative overflow-hidden">
+                    <div className="absolute -right-2 -bottom-4 opacity-20 transform -rotate-12">
+                      <AlertCircle size={120} />
+                    </div>
+                    <AlertCircle size={40} className="text-red-accent relative z-10" />
+                    <h3 className="font-heading text-3xl uppercase tracking-wide relative z-10">
+                      {result.mistakeCount} MISTAKE{result.mistakeCount !== 1 ? 'S' : ''} FOUND
+                    </h3>
+                  </div>
+                )}
+
+                {/* Corrected Text Card */}
+                <div className="bg-brown-mid brutal-border p-2">
+                  <div className="bg-bg-panel p-6 brutal-border relative">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b-4 border-bg-dark pb-4 gap-4">
+                      <h2 className="font-heading text-2xl uppercase tracking-wider text-off-white">CORRECTED TEXT</h2>
+                      <button
+                        onClick={handleCopy}
+                        className="flex items-center gap-2 bg-red-accent text-off-white font-heading px-4 py-2 brutal-border shadow-[4px_4px_0_var(--color-bg-dark)] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_var(--color-bg-dark)] transition-all uppercase"
+                      >
+                        {copied ? <CheckCircle size={20} className="text-bg-dark" /> : <Copy size={20} />}
+                        {copied ? 'COPIED!' : 'COPY TEXT'}
+                      </button>
+                    </div>
+                    <div className="min-h-[150px] whitespace-pre-wrap font-body text-xl leading-relaxed text-off-white">
+                      {result.correctedText}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mistakes List */}
+                {result.mistakes.length > 0 && (
+                  <div className="flex flex-col gap-6">
+                    {result.mistakes.map((mistake, idx) => {
+                      const isExpanded = expandedMistakes.has(idx);
+                      return (
+                        <div key={idx} className="bg-bg-panel brutal-border p-5 flex flex-col relative group transition-colors hover:bg-[#3d2b28]">
+                          {/* Interactive decorative tag */}
+                          <div className="absolute -top-4 -left-4 bg-red-accent text-bg-dark font-heading px-3 py-1 brutal-border shadow-[2px_2px_0_var(--color-bg-dark)] rotate-[-4deg] group-hover:rotate-0 transition-transform uppercase text-sm z-10">
+                            {mistake.type}
+                          </div>
+                          
+                          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex flex-col">
+                              <span className="text-xs font-heading text-gray-neutral tracking-widest uppercase mb-2">Original</span>
+                              <div className="bg-bg-dark brutal-border p-3 text-red-accent line-through opacity-90 font-mono text-base h-full shadow-[inset_2px_2px_0_#000]">
+                                {mistake.original}
+                              </div>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-heading text-gray-neutral tracking-widest uppercase mb-2">Corrected</span>
+                              <div className="bg-brown-mid brutal-border p-3 text-[#4ADE80] font-bold font-mono text-base h-full shadow-[inset_2px_2px_0_#000]">
+                                {mistake.corrected}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Interactive Accordion for Explanation */}
+                          <div className="mt-4 border-t-2 border-dashed border-brown-mid pt-4">
+                            <button 
+                              onClick={() => toggleMistake(idx)}
+                              className="w-full flex items-center justify-between text-off-white font-heading uppercase text-sm hover:text-red-accent transition-colors"
+                            >
+                              <span>Why was this corrected?</span>
+                              {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                            </button>
+                            
+                            {isExpanded && (
+                              <div className="mt-4 bg-bg-dark p-4 brutal-border animate-fade-in shadow-[4px_4px_0_var(--color-maroon)]">
+                                <p className="font-mono text-base text-off-white leading-relaxed">
+                                  {mistake.explanation}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* RIGHT SPACER (For centering when no results) */}
+          <div className={`transition-all duration-700 ease-in-out hidden xl:block ${hasResults ? 'w-0' : 'w-[20%]'}`}></div>
+
+        </div>
+
+      </main>
+
+      {/* DETAILED BRUTALIST FOOTER (Functional items only) */}
+      <footer className="footer-red-cursor mt-10 relative z-10 w-full bg-bg-dark pt-4 overflow-hidden">
+        {/* Simple straight red top line */}
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-red-accent"></div>
+
+        <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-12 pb-8 grid grid-cols-1 md:grid-cols-12 gap-12">
+          
+          {/* Brand Column */}
+          <div className="md:col-span-5 flex flex-col gap-4">
+            <h2 className="text-5xl font-brand text-red-accent tracking-widest drop-shadow-[2px_2px_0_#000]">CHECKr</h2>
+            <p className="font-heading text-base text-off-white uppercase tracking-widest">
+              Type it. Break it. We'll fix it.
+            </p>
+            <p className="text-gray-neutral font-body text-base max-w-sm leading-relaxed">
+              A simple and smart grammar & spell checker that helps you write better, clearer, and error-free — in seconds.
+            </p>
+            <div className="flex gap-4 mt-2">
+              <a href="#" className="p-2 border-2 border-red-accent/40 text-red-accent hover:bg-red-accent hover:text-bg-dark hover:border-red-accent transition-colors">
+                <Code size={20} />
+              </a>
+            </div>
+          </div>
+
+          {/* Tools / Actions Column */}
+          <div className="md:col-span-4 flex flex-col gap-4">
+            <h3 className="font-heading text-off-white text-base uppercase tracking-widest flex items-center gap-2">
+              <span className="w-4 h-[2px] bg-red-accent"></span> TOOLS
+            </h3>
+            <ul className="flex flex-col gap-3 mt-2 text-base text-gray-neutral font-body">
+              <li>
+                <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="hover:text-red-accent transition-colors">
+                  Home
+                </button>
+              </li>
+              <li>
+                <button onClick={handleCheck} className="hover:text-red-accent transition-colors text-left">
+                  Run Grammar Check
+                </button>
+              </li>
+              <li>
+                <button onClick={handleClear} className="hover:text-red-accent transition-colors text-left">
+                  Clear Text
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Engine / Powered By Column */}
+          <div className="md:col-span-3 flex flex-col gap-4 relative">
+            <h3 className="font-heading text-off-white text-base uppercase tracking-widest flex items-center gap-2">
+              <span className="w-4 h-[2px] bg-red-accent"></span> ENGINE
+            </h3>
+            <ul className="flex flex-col gap-3 mt-2 text-base text-gray-neutral font-body">
+              <li className="hover:text-red-accent transition-colors">Google Gemini Flash</li>
+              <li className="hover:text-red-accent transition-colors">LanguageTool Fallback</li>
+              <li className="hover:text-red-accent transition-colors">React & Vite</li>
+            </ul>
+
+            {/* Watermark — pushed far right to avoid overlap */}
+            <div className="absolute top-10 opacity-5 rotate-[-10deg] pointer-events-none whitespace-nowrap" style={{ right: '-9rem' }}>
+              <span className="font-brand text-5xl text-red-accent leading-none block">BETTER</span>
+              <span className="font-brand text-5xl text-red-accent leading-none block">WRITING</span>
+              <span className="font-brand text-5xl text-red-accent leading-none block">STARTS HERE.</span>
+            </div>
+          </div>
+          
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-gray-warm/20 mt-4">
+          <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm font-mono text-gray-neutral">
+            <p>© {new Date().getFullYear()} <span className="font-brand text-red-accent tracking-widest ml-1 text-sm">CHECKr</span>. Open source project.</p>
+            <div className="flex items-center gap-3">
+               <Activity size={16} className="text-red-accent animate-pulse" />
+               <span className="uppercase tracking-widest">Type it. Break it. We'll fix it.</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+export default App;

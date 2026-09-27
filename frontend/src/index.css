@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-dark: #1A1717;
+  --color-bg-panel: #372724;
+  --color-brown-mid: #4A423B;
+  --color-maroon: #540916;
+  --color-gray-warm: #5D5452;
+  --color-gray-neutral: #767579;
+  --color-red-accent: #AC0914;
+  --color-off-white: #F5F1EE;
+
+  /* Custom fonts based on requested styles */
+  --font-brand: "Anton", sans-serif;
+  --font-heading: "Archivo Black", sans-serif;
+  --font-body: "Manrope", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --animate-shake: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  --animate-fade-in: fadeIn 0.3s ease-out forwards;
+  
+  --animate-marquee: marquee 15s linear infinite;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@layer base {
+  html, body {
+    overflow-x: hidden;
+  }
+  
+  /* Brutalist custom cursor mapping */
+  * {
+    /* Thick red arrow cursor for everything */
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><polygon points="2,2 10,26 15,16 26,19" fill="%23AC0914" stroke="%23F5F1EE" stroke-width="2" stroke-linejoin="round"/></svg>') 2 2, auto;
+  }
+  
+  /* White interactive cursor */
+  button, a, input, textarea, [role="button"], label {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><polygon points="2,2 10,26 15,16 26,19" fill="%23F5F1EE" stroke="%231A1717" stroke-width="2" stroke-linejoin="round"/></svg>') 2 2, pointer !important;
+  }
+
+  body {
+    background-color: var(--color-bg-dark);
+    color: var(--color-off-white);
+    font-family: var(--font-body);
+    /* Subtle noise/grid background */
+    background-image: linear-gradient(var(--color-bg-panel) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-bg-panel) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: center center;
+  }
+
+  /* Force red cursor in footer for all elements including buttons */
+  .footer-red-cursor,
+  .footer-red-cursor * ,
+  .footer-red-cursor button,
+  .footer-red-cursor a {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><polygon points="2,2 10,26 15,16 26,19" fill="%23AC0914" stroke="%23F5F1EE" stroke-width="2" stroke-linejoin="round"/></svg>') 2 2, auto !important;
+  }
+}
+
+@layer utilities {
+  .brutal-border {
+    border: 3px solid var(--color-bg-dark);
+  }
+  
+  .brutal-shadow {
+    box-shadow: 6px 6px 0px var(--color-maroon);
+    transition: all 0.15s ease-in-out;
+  }
+  
+  .brutal-shadow:active {
+    box-shadow: 2px 2px 0px var(--color-maroon);
+    transform: translate(4px, 4px);
+  }
+
+  .brutal-shadow:hover {
+    box-shadow: 8px 8px 0px var(--color-maroon);
+    transform: translate(-2px, -2px);
+  }
+
+  .brutal-shadow-red {
+    box-shadow: 6px 6px 0px var(--color-red-accent);
+    transition: all 0.15s ease-in-out;
+  }
+
+  .brutal-shadow-red:active {
+    box-shadow: 2px 2px 0px var(--color-red-accent);
+    transform: translate(4px, 4px);
+  }
+
+  .brutal-shadow-red:hover {
+    box-shadow: 8px 8px 0px var(--color-red-accent);
+    transform: translate(-2px, -2px);
+  }
+
+  .brutal-shadow-light {
+    box-shadow: 4px 4px 0px var(--color-off-white);
+  }
+}
