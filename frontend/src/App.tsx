@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, CheckCircle, AlertTriangle, RefreshCw, AlertCircle, Terminal, ChevronDown, ChevronUp, Clock, Type, Code, Activity } from 'lucide-react';
+import { Copy, CheckCircle, AlertTriangle, RefreshCw, AlertCircle, Terminal, ChevronDown, ChevronUp, Clock, Type, Activity } from 'lucide-react';
 
 interface Mistake {
   original: string;
