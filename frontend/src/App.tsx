@@ -132,9 +132,9 @@ function App() {
 
       {/* HEADER */}
       <header className="mb-10 flex flex-col items-center border-b-4 border-bg-dark pb-6 relative z-10">
-        <div className="flex items-center justify-center">
-          <div className="bg-bg-dark text-red-accent brutal-border p-1 md:p-2 transform -rotate-6 shadow-[4px_4px_0_var(--color-red-accent)] -mr-3 md:-mr-6 mt-1 md:mt-2 relative z-20">
-            <Type className="w-[24px] h-[24px] md:w-[32px] md:h-[32px]" />
+        <div className="relative inline-block">
+          <div className="bg-bg-dark text-red-accent brutal-border p-1 md:p-2 absolute -top-3 -left-10 md:-top-4 md:-left-12 transform -rotate-6 shadow-[4px_4px_0_var(--color-red-accent)] z-20">
+            <Type className="w-[20px] h-[20px] md:w-[32px] md:h-[32px]" />
           </div>
           <h1 className="text-6xl md:text-8xl font-brand text-red-accent tracking-widest drop-shadow-[4px_4px_0_#1A1717] relative z-10">
             CHECKr
@@ -177,7 +177,7 @@ function App() {
               <button
                 onClick={handleCheck}
                 disabled={loading}
-                className="flex-[2] bg-red-accent text-off-white font-heading text-2xl py-5 brutal-border brutal-shadow-red disabled:opacity-70 disabled:cursor-not-allowed -rotate-1 flex justify-center items-center gap-3 uppercase tracking-wider group"
+                className="flex-[2] bg-red-accent text-off-white font-heading text-2xl px-4 py-5 brutal-border brutal-shadow-red disabled:opacity-70 disabled:cursor-not-allowed -rotate-1 flex justify-center items-center gap-3 uppercase tracking-wider group"
               >
                 {loading ? (
                   <>
