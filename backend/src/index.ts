@@ -83,6 +83,7 @@ async function checkWithLanguageTool(text: string) {
     correctedText,
     mistakes,
     mistakeCount: mistakes.length,
+    isGibberish: false,
   };
 }
 
@@ -102,6 +103,9 @@ CRITICAL RULES FOR NAMES:
 - Only fix capitalization of names (first letter uppercase), never their spelling.
 - You MAY correct the spelling of well-known place names (countries, cities) and common English words/things.
 
+GIBBERISH DETECTION:
+- If the user's input is entirely gibberish, random keyboard smashes (e.g., "ececefcert", "asdfghjkl"), or makes absolutely no sense in any language, set "isGibberish" to true.
+
 Return ONLY valid JSON matching this schema (no markdown fences, no commentary): 
 { 
   "correctedText": "string - the fully corrected version of the input", 
@@ -113,9 +117,10 @@ Return ONLY valid JSON matching this schema (no markdown fences, no commentary):
       "explanation": "string - one short sentence explaining the mistake"
     }
   ], 
-  "mistakeCount": "number" 
+  "mistakeCount": "number",
+  "isGibberish": "boolean"
 }
-If there are no mistakes, return correctedText identical to input and an empty mistakes array.`;
+If there are no mistakes and the text is not gibberish, return correctedText identical to input and an empty mistakes array.`;
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 

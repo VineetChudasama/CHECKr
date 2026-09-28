@@ -13,6 +13,7 @@ interface CheckResult {
   mistakes: Mistake[];
   mistakeCount: number;
   timestamp?: Date;
+  isGibberish?: boolean;
 }
 
 function App() {
@@ -258,7 +259,18 @@ function App() {
               <div className="flex flex-col gap-8 animate-fade-in">
                 
                 {/* Summary Bar */}
-                {result.mistakeCount === 0 ? (
+                {result.isGibberish ? (
+                  <div className="bg-[#F97316] text-bg-dark p-6 brutal-border flex items-center gap-4 brutal-shadow-light -rotate-1 relative overflow-hidden">
+                    <div className="absolute -right-4 -top-4 opacity-20">
+                      <AlertTriangle size={100} />
+                    </div>
+                    <AlertTriangle size={48} className="relative z-10 text-bg-dark" />
+                    <div className="relative z-10">
+                      <h3 className="font-heading text-3xl uppercase text-bg-dark">GIBBERISH DETECTED!</h3>
+                      <p className="font-body text-lg mt-1 font-bold text-bg-dark">This text makes no sense. Please enter meaningful text.</p>
+                    </div>
+                  </div>
+                ) : result.mistakeCount === 0 ? (
                   <div className="bg-[#2D4A22] text-off-white p-6 brutal-border flex items-center gap-4 brutal-shadow-light -rotate-1 relative overflow-hidden">
                     <div className="absolute -right-4 -top-4 opacity-20">
                       <CheckCircle size={100} />
@@ -282,26 +294,28 @@ function App() {
                 )}
 
                 {/* Corrected Text Card */}
-                <div className="bg-brown-mid brutal-border p-2">
-                  <div className="bg-bg-panel p-6 brutal-border relative">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b-4 border-bg-dark pb-4 gap-4">
-                      <h2 className="font-heading text-2xl uppercase tracking-wider text-off-white">CORRECTED TEXT</h2>
-                      <button
-                        onClick={handleCopy}
-                        className="flex items-center gap-2 bg-red-accent text-off-white font-heading px-4 py-2 brutal-border shadow-[4px_4px_0_var(--color-bg-dark)] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_var(--color-bg-dark)] transition-all uppercase"
-                      >
-                        {copied ? <CheckCircle size={20} className="text-bg-dark" /> : <Copy size={20} />}
-                        {copied ? 'COPIED!' : 'COPY TEXT'}
-                      </button>
-                    </div>
-                    <div className="min-h-[150px] whitespace-pre-wrap font-body text-xl leading-relaxed text-off-white">
-                      {result.correctedText}
+                {!result.isGibberish && (
+                  <div className="bg-brown-mid brutal-border p-2">
+                    <div className="bg-bg-panel p-6 brutal-border relative">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b-4 border-bg-dark pb-4 gap-4">
+                        <h2 className="font-heading text-2xl uppercase tracking-wider text-off-white">CORRECTED TEXT</h2>
+                        <button
+                          onClick={handleCopy}
+                          className="flex items-center gap-2 bg-red-accent text-off-white font-heading px-4 py-2 brutal-border shadow-[4px_4px_0_var(--color-bg-dark)] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_var(--color-bg-dark)] transition-all uppercase"
+                        >
+                          {copied ? <CheckCircle size={20} className="text-bg-dark" /> : <Copy size={20} />}
+                          {copied ? 'COPIED!' : 'COPY TEXT'}
+                        </button>
+                      </div>
+                      <div className="min-h-[150px] whitespace-pre-wrap font-body text-xl leading-relaxed text-off-white">
+                        {result.correctedText}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Mistakes List */}
-                {result.mistakes.length > 0 && (
+                {!result.isGibberish && result.mistakes.length > 0 && (
                   <div className="flex flex-col gap-6">
                     {result.mistakes.map((mistake, idx) => {
                       const isExpanded = expandedMistakes.has(idx);
